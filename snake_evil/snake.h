@@ -86,7 +86,7 @@ bool gameover = 0;
 	 deque<point> body{ {32,32},{ 32,32 }, { 32,32 },{ 32,32 } };
 	 deque<point>::const_iterator bo=body.begin();
 	 point new_head=*bo;
-	 char state = 'a';
+	 char state = 'a'£»
 	 bool ate = 0;
 	 point apple;
 	

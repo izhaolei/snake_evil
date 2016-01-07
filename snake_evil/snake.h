@@ -3,8 +3,12 @@
 
 #include<iostream>
 #include <utility>
+#include "time.h"
+#include "opencv2/opencv.hpp"
+#include "opencv2/core.hpp"
 #include<deque>
 using namespace std;
+using namespace cv;
 
 bool gameover = 0;
 
@@ -13,7 +17,7 @@ bool gameover = 0;
 
  private:
 
-	 pair<int,int> pos;
+	 pair<char,char> pos;
 
  public:
 	 point()
@@ -22,13 +26,13 @@ bool gameover = 0;
 		 pos.second = 0;
 	 }
 
-	 point( const int &x, const int &y) //按XY坐标赋值
+	 point( const char &x, const char &y) //按XY坐标赋值
 	 {
 		 pos.first = x;
 		 pos.second = y;
 	 }
 
-	 void change(const int &x, const int &y)
+	 void change(const char &x, const char &y)
 	 {
 		 pos.first = x;
 		 pos.second = y;
@@ -38,6 +42,7 @@ bool gameover = 0;
 		 if ((--pos.second) <0)
 		 {
 			 gameover = 1;
+			 pos.second = 63;
 		 }
 	 }
 	 void equaldown()
@@ -46,6 +51,7 @@ bool gameover = 0;
 		 if ((++pos.second)==64)
 		 {
 			 gameover=1;
+			 pos.second = 0;
 		 }
 	 }
 	 void equalleft()
@@ -53,6 +59,7 @@ bool gameover = 0;
 		 if ((--pos.first)<0)
 		 {
 			 gameover=1;
+			 pos.first = 63;
 		 }
 	 }
 	 void equalright()
@@ -60,7 +67,16 @@ bool gameover = 0;
 		 if ((++pos.first) == 64)
 		 {
 			 gameover=1;
+			 pos.first = 0;
 		 }
+	 }
+	 char first_data()
+	 {
+		 return pos.first;
+	 }
+	 char second_data()
+	 {
+		 return pos.second;
 	 }
 	 friend ostream& operator<<(ostream &out, point po)
 	 {
@@ -68,7 +84,7 @@ bool gameover = 0;
 		 return out;
 	 }
 
-	 bool operator==(point p)
+	 bool operator==(const point p)
 	 {
 		 if (pos == p.pos)
 			 return 1;
@@ -83,14 +99,34 @@ bool gameover = 0;
 	
  private:
 
-	 deque<point> body{ {32,32},{ 32,32 }, { 32,32 },{ 32,32 } };
-	 deque<point>::const_iterator bo=body.begin();
-	 point new_head=*bo;
-	 char state = 'a'；
+	 deque<point> body{ {32,32},{ 32,33 }, { 32,34 },{ 32,35 } };
+	 deque<point>::const_iterator bo = body.begin();
+	 Mat data = Mat::ones(640, 640, CV_8UC1);
+	 Mat game = imread("E:/snake/snake_evil/game.jpg");
+	 Mat RIO = data(Rect(0, 0, 10, 10));
+	 point new_head = *bo;
+	 char s;
+	 char num=0, speed=100;
+	 char state = 'a';
 	 bool ate = 0;
 	 point apple;
 	
  public:
+	 void  init()
+	 {
+
+		 namedWindow("snake", WINDOW_AUTOSIZE);
+		 newApple();
+		 while (1)
+		 {
+			 
+			 s = waitKey(speed);
+			 if (s != -1)
+				 changeState(s);
+			 move();
+			 printsnake();
+		 }
+	 }
 	 void up()
 	 {
 		 if (ate)
@@ -155,21 +191,30 @@ bool gameover = 0;
 	 bool eatApple()
 	 {
 		 if (new_head == apple)
+		 {
+			 if (num<10)
+			 {
+				 speed -= 5;
+			 }
 			 return 1;
+		 }
+			 
 		 else
 			 return 0;
 	 }
 
 	 void  newApple()
 	 {
+		 //apple.change(rand() % 64, rand() % 64);
 		 char equ = 1;
 		 while (equ)
 		 {
-			 apple.change(rand() % 64, rand() % 64);
+			 srand(time(0));
+			 apple.change(rand() % 60, rand() % 60);
 			 deque<point>::const_iterator sa = body.begin();
 			 for (unsigned int i = 0; i < body.size(); i++)
 			 {
-				 if (apple==*(sa++))
+				 if (apple == *(sa++))
 				 {
 					 equ = 1;
 				 }
@@ -207,13 +252,13 @@ bool gameover = 0;
 		 {
 			 right();
 		 }
-		 else
+		 else if(state=='a')
 		 {
 			 left();
 		 }
 		 bo = body.begin();
 		 sa= *bo;
-		 for (unsigned int i = 0; i < (body.size())-1; i++)
+		 for (unsigned char i = 0; i < (body.size())-1; i++)
 		 {
 			 if (sa == *(++bo))
 			 {
@@ -223,12 +268,30 @@ bool gameover = 0;
 	 }
 	 void printsnake()
 	 {
-		 deque<point>::const_iterator sa=body.begin();
-		 for (unsigned int i = 0; i < body.size();i++)
-		 {
-			 cout << *(sa++);
-		 }
-		 cout <<"apple located at : "<<apple<<"  gameover"<<gameover<<endl;
+		 	 if (gameover)
+			  {
+				  while (1)
+				  {
+					  imshow("snake", game);
+					  if (waitKey(100) != -1)
+						  exit(0);
+				  }
+			  }
+		 
+		 
+
+			 data = Mat::ones(640, 640, CV_8UC1);
+			 for (unsigned char i = 0; i < body.size(); i++)
+			 {
+
+				 RIO = data(Rect((body.at(i)).first_data() * 10, (body.at(i)).second_data() * 10, 9, 9));
+				 RIO = RIO * 255;
+			 }
+			 RIO = data(Rect(apple.first_data() * 10, apple.second_data() * 10, 9, 9));
+			 RIO = RIO * 255;
+			 imshow("snake", data);
+		 
+
 	 }
 
  };

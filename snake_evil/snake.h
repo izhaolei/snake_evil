@@ -7,6 +7,7 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/core.hpp"
 #include<deque>
+#include<string>
 using namespace std;
 using namespace cv;
 
@@ -105,6 +106,16 @@ bool gameover = 0;
 	 Mat game = imread("E:/snake/snake_evil/game.jpg");
 	 Mat RIO = data(Rect(0, 0, 10, 10));
 	 point new_head = *bo;
+	 string code[10] = {"E:/snake/snake_evil/0.jpg",
+		 "E:/snake/snake_evil/1.jpg", 
+		 "E:/snake/snake_evil/2.jpg", 
+		 "E:/snake/snake_evil/3.jpg", 
+		 "E:/snake/snake_evil/4.jpg", 
+		 "E:/snake/snake_evil/5.jpg", 
+		 "E:/snake/snake_evil/6.jpg", 
+		 "E:/snake/snake_evil/7.jpg", 
+		 "E:/snake/snake_evil/8.jpg", 
+		 "E:/snake/snake_evil/9.jpg" };
 	 char s;
 	 char num=0, speed=100;
 	 char state = 'a';
@@ -188,11 +199,13 @@ bool gameover = 0;
 	 {
 		 state = sta;
 	 }
+
 	 bool eatApple()
 	 {
 		 if (new_head == apple)
 		 {
-			 if (num<10)
+			 num++;
+			 if (num<15)
 			 {
 				 speed -= 5;
 			 }
@@ -222,14 +235,7 @@ bool gameover = 0;
 			 equ = 0;
 		 }
 	 }
-	 //void set() //just for test
-	 //{
-		// ate = 1;
-	 //}
-	 //void reSet() //just for test
-	 //{
-		// ate = 0;
-	 //}
+
 	 void move()
 	 {
 		 point sa;
@@ -270,6 +276,14 @@ bool gameover = 0;
 	 {
 		 	 if (gameover)
 			  {
+				  RIO= RIO = game(Rect(310, 430, 20, 25));
+				  Mat score = imread(code[num/10]);
+				  Mat mask = imread(code[num / 10], 0);
+				  score.copyTo(RIO, mask);
+				  RIO = RIO = game(Rect(330, 430, 20, 25));
+				  score = imread(code[num % 10]);
+				  mask = imread(code[num % 10], 0);
+				  score.copyTo(RIO, mask);
 				  while (1)
 				  {
 					  imshow("snake", game);
